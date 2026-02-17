@@ -5,21 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KCM - CONTROLO REMOTO 24H</title>
     <style>
-        /* CSS IDÊNTICO AO SEU ORIGINAL */
-        :root { --neon-blue: #1e90ff; --neon-green: #00ff88; --neon-red: #ff3355; --gale: #f0b90b; --bg-dark: #05070a; --royal-blue: #0047AB; }
+        /* CSS ORIGINAL PRESERVADO */
+        :root { 
+            --neon-blue: #1e90ff; --neon-green: #00ff88; --neon-red: #ff3355; 
+            --gale: #f0b90b; --bg-dark: #05070a; --royal-blue: #0047AB;
+        }
         body { background: var(--bg-dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .logo { font-size: 22px; font-weight: 900; color: #fff; margin: 10px 0; }
         .logo span { color: var(--neon-blue); font-style: italic; }
-        .painel-financeiro { background: #111418; border: 2px solid var(--neon-green); border-radius: 15px; width: 95%; max-width: 600px; padding: 15px; margin-bottom: 10px; }
+        .painel-financeiro { background: #111418; border: 2px solid var(--neon-green); border-radius: 15px; width: 95%; max-width: 600px; padding: 15px; margin-bottom: 10px; box-shadow: 0 0 15px rgba(0,255,136,0.2); }
+        .fin-row { display: flex; gap: 10px; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; }
+        .fin-input-group { flex: 1; }
+        .fin-input-group label { font-size: 10px; color: #888; display: block; margin-bottom: 4px; }
         .fin-input { width: 90%; background: #000; border: 1px solid #333; color: #fff; padding: 8px; border-radius: 5px; font-weight: bold; }
         .btn-salvar { background: var(--neon-green); color: #000; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; width: 100%; margin-top: 10px; }
         .painel-estrat { background: #111418; border: 1px solid #333; border-radius: 15px; width: 95%; max-width: 600px; padding: 15px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .estrat-card { background: #000; padding: 10px; border-radius: 10px; border: 1px solid #222; text-align: center; }
-        .btn-toggle { padding: 5px 10px; font-size: 10px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; width: 100%; }
+        .estrat-name { font-size: 10px; font-weight: bold; margin-bottom: 5px; color: #888; }
+        .btn-toggle { padding: 5px 10px; font-size: 10px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; width: 100%; margin-bottom: 5px; }
         .btn-on { background: var(--neon-green); color: #000; }
         .btn-off { background: var(--neon-red); color: #fff; }
+        .estrat-stats { font-size: 10px; color: #fff; display: flex; justify-content: space-around; }
+        .painel-global { background: linear-gradient(180deg, #111418 0%, #05070a 100%); border: 2px solid var(--royal-blue); border-radius: 15px; width: 95%; max-width: 600px; padding: 15px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,71,171,0.3); }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+        .stat-label { font-size: 9px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+        .stat-val { font-size: 18px; font-weight: bold; }
         .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 600px; }
         .card { background: #111418; border-radius: 20px; padding: 12px; border: 1px solid #1e2228; }
+        .thermometer-wrap { width: 100%; height: 8px; background: #222; border-radius: 4px; margin: 8px 0; overflow: hidden; border: 1px solid #333; }
+        .thermometer-fill { height: 100%; width: 0%; transition: 0.5s; background: linear-gradient(90deg, #ff3355, #f0b90b, #00ff88); }
+        .status-box { width: 100%; min-height: 45px; background: #000; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #333; }
+        .status-txt { font-size: 9px; font-weight: bold; color: var(--neon-blue); text-align: center; }
+        .price-val { font-family: monospace; color: var(--gale); text-align: center; font-size: 11px; margin-top: 5px; }
         .select-ativo { background: #0d0f12; color: #fff; border: 1px solid #444; font-size: 10px; width: 100%; padding: 5px; margin-top: 10px; border-radius: 5px; }
         .srv-status { font-size: 10px; padding: 5px 15px; border-radius: 20px; background: #111; margin-bottom: 10px; border: 1px solid var(--neon-blue); }
     </style>
@@ -27,21 +44,39 @@
 <body>
 
     <div class="logo">K.C<span>📈</span>M REMOTE-CONTROL</div>
-    <div id="conexao" class="srv-status">CONECTANDO AO MOTOR NO RENDER...</div>
+    <div id="conexao" class="srv-status">CONECTANDO AO MOTOR...</div>
 
     <div class="painel-financeiro">
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="inpBanca" class="fin-input" placeholder="Banca">
-            <input type="number" id="inpPayout" class="fin-input" placeholder="Payout %">
+        <div class="fin-row">
+            <div class="fin-input-group">
+                <label>BANCA INICIAL (R$)</label>
+                <input type="number" id="inpBanca" class="fin-input" placeholder="Banca">
+            </div>
+            <div class="fin-input-group">
+                <label>PAYOUT (%)</label>
+                <input type="number" id="inpPayout" class="fin-input" placeholder="Payout %">
+            </div>
         </div>
-        <button class="btn-salvar" onclick="enviarConfig()">ATUALIZAR MOTOR NO SERVIDOR</button>
+        <div class="stats-row" style="border-top: 1px solid #222; padding-top: 10px;">
+            <div><span class="stat-label">Banca Atual</span><span class="stat-val" style="color:#fff" id="display-banca">R$ 0.00</span></div>
+            <div><span class="stat-label">Lucro Hoje</span><span class="stat-val" style="color:var(--neon-green)" id="display-lucro">R$ 0.00</span></div>
+            <div><span class="stat-label">Crescimento</span><span class="stat-val" style="color:var(--neon-blue)" id="display-crescimento">0%</span></div>
+        </div>
+        <button class="btn-salvar" onclick="enviarFinanceiro()">ATUALIZAR MOTOR NO SERVIDOR</button>
     </div>
+
+    <div class="painel-estrat">
+        <div class="estrat-card">
+            <div class="estrat-name">ENGOLFO BAIXA</div>
+            <button id="btn-regra1" class="btn-toggle btn-on" onclick="toggleEstrat('REGRA 1')">ATIVO</button>
+            <div class="estrat-stats"><span id="stats-regra1-w" style="color:var(--neon-green)">0W</span> <span id="stats-regra1-l" style="color:var(--neon-red)">0L</span></div>
+        </div>
+        </div>
 
     <div class="grid-container" id="grid"></div>
 
 <script>
-    // URL DO SEU RENDER (SUBSTITUA AQUI)
-    const API_URL = "https://URL_DO_SEU_SERVIDOR_NO_RENDER.onrender.com";
+    const API_URL = "https://URL_DO_SEU_RENDER.onrender.com";
 
     const LISTA_COMPLETA = [
         { id: "NONE", nome: "❌ DESATIVAR SLOT" },
@@ -50,51 +85,62 @@
         { id: "1HZ10V", nome: "📈 Volatility 10 (1s)" },
         { id: "BOOM500", nome: "💥 Boom 500" },
         { id: "frxEURUSD", nome: "💱 EUR/USD" }
-        // ... (Coloque aqui a sua lista completa de ativos)
     ];
 
-    // Função para avisar o servidor que mudou o ativo
     async function mudarAtivo(monitorId, ativoId, nomeAtivo) {
-        document.getElementById('conexao').innerText = "ENVIANDO COORDENADAS...";
         try {
             await fetch(`${API_URL}/set-ativo?monitor=${monitorId}&id=${ativoId}&nome=${nomeAtivo}`);
-            document.getElementById('conexao').innerText = "MOTOR ATUALIZADO!";
-            setTimeout(sincronizar, 2000);
-        } catch (e) {
-            document.getElementById('conexao').innerText = "ERRO DE CONEXÃO!";
-        }
+        } catch (e) { console.error("Erro ao mudar ativo"); }
     }
 
-    // Função para ler o que o servidor está a fazer agora
+    async function enviarFinanceiro() {
+        const banca = document.getElementById('inpBanca').value;
+        const payout = document.getElementById('inpPayout').value;
+        try {
+            await fetch(`${API_URL}/set-financeiro?banca=${banca}&payout=${payout}`);
+            alert("Financeiro atualizado no servidor!");
+        } catch (e) { alert("Erro ao conectar ao servidor"); }
+    }
+
     async function sincronizar() {
         try {
             const res = await fetch(`${API_URL}/status`);
             const data = await res.json();
             
-            // Atualiza a UI com os dados reais que estão salvos no Render
             document.getElementById('conexao').innerText = "MOTOR EM EXECUÇÃO 24H";
-            // Aqui você pode atualizar os placares de Win/Loss na tela
+            document.getElementById('display-banca').innerText = "R$ " + data.fin.bancaAtual.toFixed(2);
+            document.getElementById('display-lucro').innerText = "R$ " + (data.fin.bancaAtual - data.fin.bancaInicial).toFixed(2);
+            
+            // Atualiza os cards dos monitores
+            for (let i = 1; i <= 6; i++) {
+                const mData = data.monitores[`card${i}`];
+                if (mData) {
+                    document.getElementById(`status-card${i}`).innerText = mData.status;
+                    document.getElementById(`price-card${i}`).innerText = mData.preco || "---";
+                    document.getElementById(`therm-card${i}`).style.width = (mData.forca || 0) + "%";
+                }
+            }
         } catch (e) {
             document.getElementById('conexao').innerText = "MOTOR OFFLINE";
         }
     }
 
-    // Criar os 6 monitores na tela
     const grid = document.getElementById('grid');
     for (let i = 1; i <= 6; i++) {
         let options = LISTA_COMPLETA.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
         grid.innerHTML += `
             <div class="card" id="div-card${i}">
                 <div class="stat-label">MONITOR ${i}</div>
-                <div id="status-card${i}" style="font-size:10px; color:var(--neon-blue)">SINCRONIZANDO...</div>
-                <select class="select-ativo" onchange="mudarAtivo(${i}, this.value, this.options[this.selectedIndex].text)">
+                <div class="thermometer-wrap"><div class="thermometer-fill" id="therm-card${i}"></div></div>
+                <div class="status-box"><div id="status-card${i}" class="status-txt">BUSCANDO...</div></div>
+                <div class="price-val" id="price-card${i}">---</div>
+                <select class="select-ativo" onchange="mudarAtivo('card${i}', this.value, this.options[this.selectedIndex].text)">
                     ${options}
                 </select>
             </div>`;
     }
 
-    // Sincroniza a cada 5 segundos para você ver o progresso
-    setInterval(sincronizar, 5000);
+    setInterval(sincronizar, 2000);
     sincronizar();
 </script>
 </body>
